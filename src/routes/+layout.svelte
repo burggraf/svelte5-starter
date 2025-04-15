@@ -28,7 +28,12 @@
   });
 </script>
 
-<ModeWatcher />
-<Alert />
-<Loading />
 {@render children()}
+<ModeWatcher />
+<Loading />
+<!--
+<Alert />
+<div
+  class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-0 pointer-events-none w-full max-w-md flex justify-center items-center"
+></div>
+-->
