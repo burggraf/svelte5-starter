@@ -10,7 +10,7 @@
   import * as Select from "$lib/components/ui/select";
   import { Textarea } from "$lib/components/ui/textarea";
   import { toast } from "svelte-sonner";
-  import { alertManager } from "$lib/components/ui/alert/alert.svelte.ts";
+  import { alertManager } from "$lib/services/alertManager.svelte";
   import { loadingState } from "$lib/components/loading/loading-state.svelte.ts";
   import {
     upsertContact,
@@ -329,7 +329,9 @@
               </div>
             </form>
           {:else}
-            <div class="bg-background rounded-lg shadow-sm border border-border">
+            <div
+              class="bg-background rounded-lg shadow-sm border border-border"
+            >
               <!-- Contact Header -->
               <div class="px-6 py-4 border-b border-border">
                 <div class="flex items-center space-x-4">
@@ -476,7 +478,9 @@
 
                 <!-- System Information -->
                 <div class="mt-6 pt-6 border-t border-border">
-                  <div class="grid grid-cols-2 gap-4 text-xs text-muted-foreground">
+                  <div
+                    class="grid grid-cols-2 gap-4 text-xs text-muted-foreground"
+                  >
                     {#if contact.created_at}
                       <div>
                         Created: {new Date(

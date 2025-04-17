@@ -20,7 +20,7 @@
   } from "$lib/components/ui/table";
   import ContactPicker from "$lib/components/ContactPicker.svelte";
   import { getCurrentOrg } from "$lib/services/backend.svelte";
-  import { alertManager } from "$lib/components/ui/alert/alert.svelte.ts";
+  import { alertManager } from "$lib/services/alertManager.svelte";
   import { loadingState } from "$lib/components/loading/loading-state.svelte.ts";
   import { toast } from "svelte-sonner";
 
@@ -113,7 +113,8 @@
 
     const result = await alertManager.show({
       title: "Confirm Delete",
-      message: "Are you sure you want to remove this contact from the property?",
+      message:
+        "Are you sure you want to remove this contact from the property?",
       buttons: [
         { label: "Cancel", value: "cancel", variant: "outline" },
         { label: "Delete", value: "delete", variant: "destructive" },
@@ -130,7 +131,9 @@
         return;
       }
 
-      toast.success("SUCCESS", { description: "Contact removed from property" });
+      toast.success("SUCCESS", {
+        description: "Contact removed from property",
+      });
       await loadContacts();
     }
   }

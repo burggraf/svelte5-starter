@@ -1,6 +1,6 @@
 <script lang="ts">
   import PageTemplate from "$lib/components/PageTemplate.svelte";
-  import { alertManager } from "$lib/components/ui/alert/alert.svelte.ts";
+  import { alertManager } from "$lib/services/alertManager.svelte";
   import { Button } from "$lib/components/ui/button";
 
   async function showSimpleAlert() {
@@ -31,11 +31,8 @@
       message: "Click on your chocie:",
       buttons: [
         { label: "def", value: "default", variant: "default" },
-        { label: "sec", value: "secondary", variant: "secondary" },
         { label: "out", value: "outline", variant: "outline" },
         { label: "des", value: "destuctive", variant: "destructive" },
-        { label: "gst", value: "ghost", variant: "ghost" },
-        { label: "lnk", value: "link", variant: "link" },
         { label: "cancel", value: "cancel", variant: "outline" },
       ],
     });

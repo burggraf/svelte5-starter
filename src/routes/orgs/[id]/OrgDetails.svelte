@@ -13,11 +13,15 @@
   import SaveButton from "@/components/iconbuttons/SaveButton.svelte";
   import DeleteButton from "@/components/iconbuttons/DeleteButton.svelte";
   import { toast } from "svelte-sonner";
-  import { alertManager } from "$lib/components/ui/alert/alert.svelte.ts";
+  import { alertManager } from "$lib/services/alertManager.svelte";
   import CancelButton from "@/components/iconbuttons/CancelButton.svelte";
   import { loadingState } from "$lib/components/loading/loading-state.svelte.ts";
   import { page } from "$app/stores";
-  import { updateCurrentOrg, getCurrentOrg, getUser } from "@/services/backend.svelte";
+  import {
+    updateCurrentOrg,
+    getCurrentOrg,
+    getUser,
+  } from "@/services/backend.svelte";
 
   const id = $derived($page.params.id);
   const user = $derived(getUser());
@@ -118,7 +122,7 @@
       const {
         data: { data, error },
       } = await deleteOrg(org);
-      
+
       if (error) {
         loadingState.hide();
         toast.error("ERROR", { description: (error as Error).message });
@@ -132,7 +136,7 @@
             await updateCurrentOrg(orgs[0].id);
           }
         }
-        
+
         loadingState.hide();
         setTimeout(() => {
           toast.success("SUCCESS", { description: "Organization deleted" });

@@ -4,8 +4,9 @@
   import { SafeArea } from "@capacitor-community/safe-area";
   import { setLocale } from "$lib/i18n/index.svelte.ts";
   import { initializeUser } from "$lib/services/backend.svelte";
-  import Alert from "$lib/components/ui/alert/alert.svelte";
+  // import Alert from "$lib/components/ui/alert/alert.svelte";
   import Loading from "$lib/components/loading/loading.svelte";
+  import AlertDialogHost from "$lib/components/ui/alert-dialog-host.svelte";
 
   let { children } = $props();
 
@@ -31,6 +32,7 @@
 {@render children()}
 <ModeWatcher />
 <Loading />
+<AlertDialogHost />
 <!--
 <Alert />
 <div

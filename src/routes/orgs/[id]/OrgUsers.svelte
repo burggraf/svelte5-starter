@@ -10,7 +10,7 @@
   import * as Table from "$lib/components/ui/table/index.js";
   import RoleSelector from "./RoleSelector.svelte";
   import SaveButton from "@/components/iconbuttons/SaveButton.svelte";
-  import { alertManager } from "$lib/components/ui/alert/alert.svelte.ts";
+  import { alertManager } from "$lib/services/alertManager.svelte";
   import { toast } from "svelte-sonner";
   import { getUser } from "$lib/services/backend.svelte";
   const user = $derived(getUser());
