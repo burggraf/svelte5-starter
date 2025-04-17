@@ -114,9 +114,9 @@
     });
 
     if (result === "delete") {
-      loadingState.show("Deleting contact...");
-      const { error } = await deleteContact(contact.id);
-      loadingState.hide();
+      loadingState.startLoading("Deleting contact...");
+      const { error } = await deleteContact(contact.id ?? "");
+      loadingState.stopLoading();
 
       if (error) {
         toast.error("ERROR", { description: error.message });
@@ -248,7 +248,10 @@
 
               <div class="space-y-2">
                 <Label for="contact_type">Contact Type</Label>
-                <Select.Root type="single" bind:value={contact.contact_type}>
+                <Select.Root
+                  type="single"
+                  bind:value={contact.contact_type as string | undefined}
+                >
                   <Select.Trigger class="w-full">
                     {contactTypeContent}
                   </Select.Trigger>
@@ -320,7 +323,7 @@
                   id="notes"
                   bind:value={contact.notes}
                   placeholder="Enter any additional notes about the contact"
-                  rows="4"
+                  rows={4}
                 />
               </div>
 
