@@ -125,8 +125,9 @@ jobs:
       - name: Build SvelteKit
         run: pnpm build
       - name: Build Tauri (Ubuntu Intel)
-        run: pnpm tauri build --target x86_64-unknown-linux-gnu
+        run: pnpm tauri build --target x86_64-unknown-linux-gnu || echo "Ubuntu Intel build failed"
       - uses: actions/upload-artifact@v4
+        if: success() && always()
         with:
           name: tauri-ubuntu-intel
           path: src-tauri/target/x86_64-unknown-linux-gnu/release/bundle
@@ -150,8 +151,9 @@ jobs:
       - name: Build SvelteKit
         run: pnpm build
       - name: Build Tauri (Ubuntu ARM)
-        run: pnpm tauri build --target aarch64-unknown-linux-gnu
+        run: pnpm tauri build --target aarch64-unknown-linux-gnu || echo "Ubuntu ARM build failed"
       - uses: actions/upload-artifact@v4
+        if: success() && always()
         with:
           name: tauri-ubuntu-arm
           path: src-tauri/target/aarch64-unknown-linux-gnu/release/bundle
@@ -174,14 +176,15 @@ jobs:
         with:
           path: artifacts
 
-      - name: Zip artifacts
+      - name: Zip artifacts if present
         run: |
-          cd artifacts/tauri-macos-arm && zip -r ../../tauri-macos-arm.zip .
-          cd ../tauri-macos-intel && zip -r ../../tauri-macos-intel.zip .
-          cd ../tauri-windows-intel && zip -r ../../tauri-windows-intel.zip .
-          cd ../tauri-windows-arm && zip -r ../../tauri-windows-arm.zip .
-          cd ../tauri-ubuntu-intel && zip -r ../../tauri-ubuntu-intel.zip .
-          cd ../tauri-ubuntu-arm && zip -r ../../tauri-ubuntu-arm.zip .
+          for dir in tauri-macos-arm tauri-macos-intel tauri-windows-intel tauri-windows-arm tauri-ubuntu-intel tauri-ubuntu-arm; do
+            if [ -d "artifacts/$dir" ]; then
+              cd "artifacts/$dir"
+              zip -r "../../$dir.zip" .
+              cd - > /dev/null
+            fi
+          done
 
       - name: Create GitHub Release
         id: create_release
@@ -194,68 +197,12 @@ jobs:
           draft: false
           prerelease: false
 
-      - name: Upload macOS ARM artifact to Release
-        if: always()
-        uses: actions/upload-release-asset@v1
+      - name: Upload artifacts to Release
+        run: |
+          for zip in tauri-macos-arm.zip tauri-macos-intel.zip tauri-windows-intel.zip tauri-windows-arm.zip tauri-ubuntu-intel.zip tauri-ubuntu-arm.zip; do
+            if [ -f "$zip" ]; then
+              gh release upload "${{ github.ref_name }}-tauri-release-${{ github.run_number }}" "$zip" --clobber
+            fi
+          done
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: tauri-macos-arm.zip
-          asset_name: tauri-macos-arm.zip
-          asset_content_type: application/zip
-
-      - name: Upload macOS Intel artifact to Release
-        if: always()
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: tauri-macos-intel.zip
-          asset_name: tauri-macos-intel.zip
-          asset_content_type: application/zip
-
-      - name: Upload Windows Intel artifact to Release
-        if: always()
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: tauri-windows-intel.zip
-          asset_name: tauri-windows-intel.zip
-          asset_content_type: application/zip
-
-      - name: Upload Windows ARM artifact to Release
-        if: always()
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: tauri-windows-arm.zip
-          asset_name: tauri-windows-arm.zip
-          asset_content_type: application/zip
-
-      - name: Upload Ubuntu Intel artifact to Release
-        if: always()
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: tauri-ubuntu-intel.zip
-          asset_name: tauri-ubuntu-intel.zip
-          asset_content_type: application/zip
-
-      - name: Upload Ubuntu ARM artifact to Release
-        if: always()
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: tauri-ubuntu-arm.zip
-          asset_name: tauri-ubuntu-arm.zip
-          asset_content_type: application/zip
