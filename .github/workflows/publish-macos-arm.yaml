@@ -17,19 +17,20 @@ jobs:
         include:
           - platform: "macos-latest" # for Arm based macs (M1 and above).
             args: "--target aarch64-apple-darwin"
+          #- platform: "macos-latest" # for Intel based macs.
+          #  args: "--target x86_64-apple-darwin"
+          #- platform: "ubuntu-22.04" # for Tauri v1 you could replace this with ubuntu-20.04.
+          #  args: ""
+          #- platform: "windows-latest"
+          #  args: ""
 
     runs-on: ${{ matrix.platform }}
-
+    # Add environment variables here
     env:
       SUPABASE_URL_ENCRYPTED: ${{ secrets.SUPABASE_URL_ENCRYPTED }}
       SUPABASE_URL_ENCRYPTION_KEY: ${{ secrets.SUPABASE_URL_ENCRYPTION_KEY }}
       SUPABASE_ANON_KEY_ENCRYPTED: ${{ secrets.SUPABASE_ANON_KEY_ENCRYPTED }}
       SUPABASE_ANON_KEY_ENCRYPTION_KEY: ${{ secrets.SUPABASE_ANON_KEY_ENCRYPTION_KEY }}
-      # These will be set later using package.json
-      # VERSION: ""
-      # NAME: ""
-      # IDENTIFIER: ""
-      # DESCRIPTION: ""
 
     steps:
       - uses: actions/checkout@v4
@@ -38,243 +39,204 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
-          cache: 'npm' # Add caching for npm
 
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: 'aarch64-apple-darwin,x86_64-apple-darwin' # Keep both targets for macOS runner
+          # Those targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
-      # Cache Rust dependencies
-      - name: Cache Rust dependencies
-        uses: Swatinem/rust-cache@v2
-
-      - name: Set environment variables from package.json
-        id: package_vars
+      - name: install dependencies (ubuntu only)
+        if: matrix.platform == 'ubuntu-22.04' # This must match the platform value defined above.
         run: |
-          echo "Reading package.json..."
-          if [ ! -f package.json ]; then
-            echo "Error: package.json not found!"
-            exit 1
-          fi
-          echo "Setting env variables from package.json..."
-          VERSION=$(node -p "require('./package.json').version")
-          NAME=$(node -p "require('./package.json').name")
-          IDENTIFIER=$(node -p "require('./package.json').identifier || 'com.example.app'") # Add a fallback identifier
-          DESCRIPTION=$(node -p "require('./package.json').description || 'An application'") # Add a fallback description
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+        # webkitgtk 4.0 is for Tauri v1 - webkitgtk 4.1 is for Tauri v2.
+        # You can remove the one that doesn't apply to your app to speed up the workflow a bit.
 
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "NAME=$NAME" >> $GITHUB_ENV
-          echo "IDENTIFIER=$IDENTIFIER" >> $GITHUB_ENV
-          echo "DESCRIPTION=$DESCRIPTION" >> $GITHUB_ENV
-
-          echo "Extracted VERSION: $VERSION"
-          echo "Extracted NAME: $NAME"
-          echo "Extracted IDENTIFIER: $IDENTIFIER"
-          echo "Extracted DESCRIPTION: $DESCRIPTION"
-
+      - name: Set environment variables
+        run: |
+          echo "package.json contents:"
+          cat package.json
+          echo "**************"
+          echo "setting env variables"
+          echo "VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
+          echo "NAME=$(node -p "require('./package.json').name")" >> $GITHUB_ENV
+          echo "IDENTIFIER=$(node -p "require('./package.json').identifier")" >> $GITHUB_ENV
+          echo "DESCRIPTION=$(node -p "require('./package.json').description")" >> $GITHUB_ENV
+          export VERSION=$(node -p "require('./package.json').version")
+          export NAME=$(node -p "require('./package.json').name")
+          export IDENTIFIER=$(node -p "require('./package.json').identifier")
+          export DESCRIPTION=$(node -p "require('./package.json').description")
+          echo "Shell VERSION: $VERSION"
+          echo "Shell NAME: $NAME"
+          echo "Shell IDENTIFIER: $IDENTIFIER"
+          echo "Shell DESCRIPTION: $DESCRIPTION"
       - name: Check environment variables
         run: |
-          echo "Checking GITHUB_ENV variables:"
-          echo "VERSION=${{ env.VERSION }}"
-          echo "NAME=${{ env.NAME }}"
-          echo "IDENTIFIER=${{ env.IDENTIFIER }}"
-          echo "DESCRIPTION=${{ env.DESCRIPTION }}"
-          if [ -z "${{ env.VERSION }}" ] || [ -z "${{ env.NAME }}" ] || [ -z "${{ env.IDENTIFIER }}" ]; then
-            echo "Error: One or more environment variables failed to set correctly."
-            exit 1
-          fi
+          echo "ENV VERSION: ${{ env.VERSION }}"
+          echo "ENV NAME: ${{ env.NAME }}"
+          echo "ENV IDENTIFIER: ${{ env.IDENTIFIER }}"
+          echo "Computed VERSION: $(node -p "require('./package.json').version")"
+          echo "Computed NAME: $(node -p "require('./package.json').name")"
 
-      - name: Install frontend dependencies and build
+      - name: Create and initialize Tauri project
         run: |
           npm install
-          npm run build # This should generate the ./build directory
+          npm run build
 
-      - name: Create Tauri project structure and configuration
-        run: |
-          echo "Creating Tauri project structure..."
           # Create src-tauri directory and subdirectories
           mkdir -p src-tauri/icons
           mkdir -p src-tauri/src
 
-          # Initialize a new Rust project inside src-tauri
+          # Initialize a new Rust project
           cd src-tauri
-          cargo init --name ${{ env.NAME }} --vcs none # Use --vcs none to avoid nested git repo
+          cargo init --name ${{ env.NAME }}
           cd ..
 
-          # Copy icons (ensure these paths are correct relative to your repo root)
-          # Using a placeholder if static/favicon.png doesn't exist
-          if [ -f static/favicon.png ]; then
-            cp static/favicon.png src-tauri/icons/32x32.png
-            cp static/favicon.png src-tauri/icons/128x128.png
-            cp static/favicon.png src-tauri/icons/128x128@2x.png
-            cp static/favicon.png src-tauri/icons/icon.icns
-            cp static/favicon.png src-tauri/icons/icon.ico
-          else
-            echo "Warning: static/favicon.png not found. Using placeholders."
-            # Create placeholder icons if original doesn't exist
-            convert -size 32x32 xc:blue src-tauri/icons/32x32.png
-            convert -size 128x128 xc:blue src-tauri/icons/128x128.png
-            convert -size 256x256 xc:blue src-tauri/icons/128x128@2x.png
-            # .icns and .ico might require more specific tools or be omitted
-            touch src-tauri/icons/icon.icns
-            touch src-tauri/icons/icon.ico
-          fi
+          # Copy icons
+          cp static/favicon.png src-tauri/icons/32x32.png
+          cp static/favicon.png src-tauri/icons/128x128.png
+          cp static/favicon.png src-tauri/icons/128x128@2x.png
+          cp static/favicon.png src-tauri/icons/icon.icns
+          cp static/favicon.png src-tauri/icons/icon.ico
 
-          # Create Cargo.toml for Tauri v2
-          echo "Generating src-tauri/Cargo.toml..."
+          # Create Cargo.toml
           cat > src-tauri/Cargo.toml << EOF
-[package]
-name = "${{ env.NAME }}"
-version = "${{ env.VERSION }}"
-description = "${{ env.DESCRIPTION }}"
-authors = ["you"] # Change as needed
-license = ""
-repository = ""
-edition = "2021"
-rust-version = "1.70" # Specify your Rust version
+          [package]
+          name = "${{ env.NAME }}"
+          version = "${{ env.VERSION }}"
+          description = "${{ env.DESCRIPTION }}"
+          authors = ["you"]
+          license = ""
+          repository = ""
+          edition = "2021"
+          rust-version = "1.70"
 
-[build-dependencies]
-tauri-build = { version = "2.0.0-rc", features = [] } # Use Tauri v2 release candidate or stable
+          [build-dependencies]
+          tauri-build = { version = "2", features = [] }
 
-[dependencies]
-serde_json = "1.0"
-serde = { version = "1.0", features = ["derive"] }
-tauri = { version = "2.0.0-rc", features = ["shell-open", "devtools"] } # Match version with tauri-build, enable features
-tauri-plugin-shell = "2.0.0-rc" # Example plugin, adjust as needed
+          [dependencies]
+          serde_json = "1.0"
+          serde = { version = "1.0", features = ["derive"] }
+          tauri = { version = "2", features = ["shell-open", "devtools"] }
 
-[features]
-# custom-protocol is required for production builds
-# default = ["custom-protocol"] # Deprecated in v2? Check docs. Often implicit.
-EOF
+          [features]
+          custom-protocol = [ "tauri/custom-protocol" ]
+          default = [ "custom-protocol" ]
+          EOF
 
-          # Create build.rs for Tauri v2
-          echo "Generating src-tauri/build.rs..."
+          # Create build.rs
           cat > src-tauri/build.rs << EOF
-fn main() {
-  tauri_build::build()
-}
-EOF
+          fn main() {
+            tauri_build::build()
+          }
+          EOF
 
-          # Create main.rs for Tauri v2
-          echo "Generating src-tauri/src/main.rs..."
+          # Create main.rs
           cat > src-tauri/src/main.rs << EOF
-// Prevents additional console window on Windows in release, DO NOT REMOVE!!
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+          #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-fn main() {
-  // Example using a plugin
-  // let _ = tauri::Builder::default()
-  //     .plugin(tauri_plugin_shell::init())
-  //     .run(tauri::generate_context!());
+          fn main() {
+              tauri::Builder::default()
+                  .run(tauri::generate_context!())
+                  .expect("error while running tauri application");
+          }
+          EOF
 
-  // Basic setup without plugins
-  tauri::Builder::default()
-    .run(tauri::generate_context!())
-    .expect("error while running tauri application");
-}
-EOF
-
-          # Create tauri.conf.json for Tauri v2 (Corrected)
-          echo "Generating src-tauri/tauri.conf.json..."
+          # Create tauri.conf.json with both Linux and macOS targets
           cat > src-tauri/tauri.conf.json << EOF
-{
-  "build": {
-    "beforeDevCommand": "",
-    "beforeBuildCommand": "",
-    "frontendDist": "../build",
-    "devUrl": "http://localhost:5173" # Adjust if you use a different dev server/port, or null
-  },
-  "package": {
-    "productName": "${{ env.NAME }}",
-    "version": "${{ env.VERSION }}"
-  },
-  "tauri": {
-    "bundle": {
-      "active": true,
-      "category": "Utility", # Or choose appropriate category
-      "copyright": "",
-      "identifier": "${{ env.IDENTIFIER }}",
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ],
-      "resources": [],
-      "shortDescription": "${{ env.DESCRIPTION }}",
-      "targets": [ "dmg", "app" ], # Targets specific to this macOS job
-      "macOS": {
-        "frameworks": [],
-        "minimumSystemVersion": "10.13", # Set minimum macOS version if needed
-        "exceptionDomain": "",
-        "signingIdentity": null, # Set to your Apple Developer signing identity if applicable
-        "entitlements": null # Path to entitlements file if needed
-      }
-    },
-    "security": {
-      "csp": null # Define CSP if needed, null allows anything in dev but restricts in prod
-    },
-    "windows": [
-      {
-        "fullscreen": false,
-        "height": 600,
-        "resizable": true,
-        "title": "${{ env.NAME }}",
-        "width": 800
-      }
-    ],
-    "allowlist": {
-      "all": false, # Default deny, enable specific APIs as needed
-      "shell": {
-        "open": true # Allow opening external links/files
-      }
-      // Example: "fs": { "scope": ["$APP/data/*"] }
-    },
-    "updater": {
-      "active": false # Set to true to enable built-in updater
-      // "endpoints": [ "YOUR_UPDATE_SERVER_URL" ], // Required if active is true
-      // "pubkey": "YOUR_SIGNING_PUBLIC_KEY" // Required if active is true
-    }
-  }
-}
-EOF
+          {
+            "build": {
+              "beforeDevCommand": "",
+              "beforeBuildCommand": "",
+              "frontendDist": "../build".
+              "devUrl": null
+            },
+            "package": {
+              "productName": "${{ env.NAME }}_macos",
+              "version": "${{ env.VERSION }}"
+            },
+            "tauri": {
+              "bundle": {
+                "active": true,
+                "category": "DeveloperTool",
+                "copyright": "",
+                "identifier": "${{ env.IDENTIFIER }}",
+                "icon": [
+                  "icons/32x32.png",
+                  "icons/128x128.png",
+                  "icons/128x128@2x.png",
+                  "icons/icon.icns",
+                  "icons/icon.ico"
+                ],
+                "resources": [],
+                "shortDescription": "",
+                "targets": [
+                  "dmg",
+                  "app",
+                  "deb",
+                  "appimage",
+                  "rpm"
+                ],
+                "deb": {
+                  "depends": []
+                },
+                "rpm": {
+                  "depends": []
+                },
+                "macOS": {
+                  "frameworks": [],
+                  "minimumSystemVersion": "",
+                  "exceptionDomain": "",
+                  "signingIdentity": null,
+                  "entitlements": null
+                },
+                "windows": {
+                  "certificateThumbprint": null,
+                  "digestAlgorithm": "sha256",
+                  "timestampUrl": ""
+                }
+              },
+              "security": {
+                "csp": null
+              },
+              "windows": [
+                {
+                  "fullscreen": false,
+                  "height": 600,
+                  "resizable": true,
+                  "title": "${{ env.NAME }}",
+                  "width": 800
+                }
+              ],
+              "allowlist": {
+                "all": false
+              },
+              "updater": {
+                "active": false
+              }
+            }
+          }
+          EOF
 
-          # Verify the structure and configuration files
-          echo "Verifying src-tauri contents:"
+          # Verify the directory structure
+          echo "Tauri directory contents:"
           ls -la src-tauri/
-          echo "-----------------------------"
-          echo "src-tauri/Cargo.toml contents:"
+          echo "Cargo.toml contents:"
           cat src-tauri/Cargo.toml
-          echo "-----------------------------"
-          echo "src-tauri/tauri.conf.json contents:"
-          cat src-tauri/tauri.conf.json
-          echo "-----------------------------"
 
-
-      - name: Build and release Tauri app
-        uses: tauri-apps/tauri-action@v0 # Use appropriate version, v0 often tracks latest stable v2 concepts
+      - uses: tauri-apps/tauri-action@v0.5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }} # Uncomment if using Tauri signing
-          # TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }} # Uncomment if key is password-protected
-          # APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }} # Base64 encoded .p12 file for macOS code signing
-          # APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }} # Password for the .p12 file
-          # APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }} # Apple Developer signing identity name
-          # APPLE_ID: ${{ secrets.APPLE_ID }} # Apple ID for notarization
-          # APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }} # App-specific password for notarization
-          # APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }} # Apple Developer Team ID for notarization
         with:
-          projectPath: src-tauri # Point the action to the directory containing Cargo.toml
-          tagName: ${{ env.NAME }}-v${{ env.VERSION }} # Tag format: appname-v1.0.0
-          releaseName: "${{ env.NAME }} v${{ env.VERSION }}" # Release name format: App Name v1.0.0
-          releaseBody: "Release of version ${{ env.VERSION }}"
-          releaseDraft: true # Set to false to publish immediately
+          tagName: app-v__VERSION__
+          releaseName: "App v__VERSION__"
+          releaseBody: "See the assets to download this version and install."
+          releaseDraft: true
           prerelease: false
-          args: ${{ matrix.args }} # Pass the --target argument
-          # distPath: ../build # Not needed if using frontendDist in tauri.conf.json and projectPath is set correctly
-          # iconPath: ../static/favicon.png # Not needed if icons are correctly specified in tauri.conf.json bundle.icon
-          # includeDebug: false # Optionally include debug builds
-          # tauriScript: null # Use default (infers from project)
-
+          args: ${{ matrix.args }}
+          distPath: ./build
+          bundleIdentifier: ${{ env.IDENTIFIER }}
+          appName: ${{ env.NAME }}
+          appVersion: ${{ env.VERSION }}
