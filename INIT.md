@@ -245,3 +245,4 @@ Documentation
 - Svelte 5 Runes: https://svelte.dev/docs/svelte/what-are-runes
 
 Refer to Svelte documentation for detailed information on components and best practices.
+
