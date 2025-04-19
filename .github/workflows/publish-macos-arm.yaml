@@ -211,8 +211,7 @@ jobs:
                   "height": 600,
                   "resizable": true,
                   "title": "${{ env.NAME }}",
-                  "width": 800,
-                  "webview": { "devtools": true }
+                  "width": 800
                 }
               ]
             }
