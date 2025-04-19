@@ -150,7 +150,6 @@ jobs:
             "build": {
               "beforeDevCommand": "",
               "beforeBuildCommand": "",
-              "devUrl": "$(pwd)/build",
               "distDir": "$(pwd)/build"
             },
             "package": {
