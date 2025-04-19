@@ -13,7 +13,9 @@
 		"ios": "npm run build && npx cap sync && npx cap update ios && npx cap copy ios && npx cap run ios",
 		"ios-reload": "cap run ios -l --external --port=5173",
 		"android": "npm run build && npx cap sync && npx cap update android && npx cap copy android && npx cap run android",
-		"android-reload": "cap run android -l --external --port=5173"
+		"android-reload": "cap run android -l --external --port=5173",
+		"tauri:dev": "tauri dev",
+		"tauri:build": "tauri build"
 	},
 	"devDependencies": {
 		"@capacitor/cli": "^6.1.2",

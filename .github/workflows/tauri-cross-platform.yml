@@ -1,0 +1,145 @@
+name: Tauri Cross-Platform Builds
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build-macos-arm:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Rust (ARM)
+        run: rustup target add aarch64-apple-darwin
+      - name: Install dependencies
+        run: pnpm install
+      - name: Build SvelteKit
+        run: pnpm build
+      - name: Build Tauri (macOS ARM)
+        run: pnpm tauri build --target aarch64-apple-darwin
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tauri-macos-arm
+          path: src-tauri/target/aarch64-apple-darwin/release/bundle
+
+  build-macos-intel:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Rust (Intel)
+        run: rustup target add x86_64-apple-darwin
+      - name: Install dependencies
+        run: pnpm install
+      - name: Build SvelteKit
+        run: pnpm build
+      - name: Build Tauri (macOS Intel)
+        run: pnpm tauri build --target x86_64-apple-darwin
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tauri-macos-intel
+          path: src-tauri/target/x86_64-apple-darwin/release/bundle
+
+  build-windows-intel:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Rust (Intel)
+        run: rustup target add x86_64-pc-windows-msvc
+      - name: Install dependencies
+        run: pnpm install
+      - name: Build SvelteKit
+        run: pnpm build
+      - name: Build Tauri (Windows Intel)
+        run: pnpm tauri build --target x86_64-pc-windows-msvc
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tauri-windows-intel
+          path: src-tauri/target/x86_64-pc-windows-msvc/release/bundle
+
+  build-windows-arm:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Rust (ARM)
+        run: rustup target add aarch64-pc-windows-msvc
+      - name: Install dependencies
+        run: pnpm install
+      - name: Build SvelteKit
+        run: pnpm build
+      - name: Build Tauri (Windows ARM)
+        run: pnpm tauri build --target aarch64-pc-windows-msvc
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tauri-windows-arm
+          path: src-tauri/target/aarch64-pc-windows-msvc/release/bundle
+
+  build-ubuntu-intel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Rust (Intel)
+        run: rustup target add x86_64-unknown-linux-gnu
+      - name: Install dependencies
+        run: pnpm install
+      - name: Build SvelteKit
+        run: pnpm build
+      - name: Build Tauri (Ubuntu Intel)
+        run: pnpm tauri build --target x86_64-unknown-linux-gnu
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tauri-ubuntu-intel
+          path: src-tauri/target/x86_64-unknown-linux-gnu/release/bundle
+
+  build-ubuntu-arm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Rust (ARM)
+        run: rustup target add aarch64-unknown-linux-gnu
+      - name: Install dependencies
+        run: pnpm install
+      - name: Build SvelteKit
+        run: pnpm build
+      - name: Build Tauri (Ubuntu ARM)
+        run: pnpm tauri build --target aarch64-unknown-linux-gnu
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tauri-ubuntu-arm
+          path: src-tauri/target/aarch64-unknown-linux-gnu/release/bundle
