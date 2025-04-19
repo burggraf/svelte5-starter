@@ -150,7 +150,7 @@ jobs:
             "build": {
               "beforeDevCommand": "",
               "beforeBuildCommand": "",
-              "distDir": "$(pwd)/build"
+              "frontendDist": "$(pwd)/build"
             },
             "package": {
               "productName": "${{ env.NAME }}_macos",
