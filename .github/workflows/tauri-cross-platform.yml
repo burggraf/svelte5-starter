@@ -3,7 +3,7 @@ name: Tauri Cross-Platform Builds
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [release]
 
 jobs:
   build-macos-arm:
