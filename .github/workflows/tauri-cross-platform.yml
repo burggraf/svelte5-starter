@@ -188,6 +188,7 @@ jobs:
           deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ noble-security main restricted universe multiverse
           EOF
           sudo apt-get clean
+          grep -r azure.archive.ubuntu.com /etc/apt || true
           sudo apt-get update
           echo "==== AFTER sources.list and sources.list.d ===="
           cat /etc/apt/sources.list
