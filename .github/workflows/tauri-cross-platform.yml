@@ -127,6 +127,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      - name: Print OS version and search for webkit packages
+        run: |
+          cat /etc/os-release
+          apt-cache search webkit
       - name: Enable universe repo and install system dependencies
         run: |
           sudo apt-get update
@@ -160,6 +164,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      - name: Print OS version and search for webkit packages
+        run: |
+          cat /etc/os-release
+          apt-cache search webkit
       - name: Enable universe repo and install system dependencies
         run: |
           sudo apt-get update
