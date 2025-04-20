@@ -171,6 +171,12 @@ jobs:
       - name: Add ARM64 architecture and sources, install ARM64 dependencies
         run: |
           sudo dpkg --add-architecture arm64
+          echo "==== BEFORE sources.list and sources.list.d ===="
+          cat /etc/apt/sources.list
+          ls -l /etc/apt/sources.list.d/
+          cat /etc/apt/sources.list.d/* || true
+          echo "==== END BEFORE sources.list and sources.list.d ===="
+          sudo rm -f /etc/apt/sources.list.d/*.list
           sudo tee /etc/apt/sources.list << EOF
           deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ noble main restricted universe multiverse
           deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ noble-updates main restricted universe multiverse
@@ -181,8 +187,13 @@ jobs:
           deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ noble-backports main restricted universe multiverse
           deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ noble-security main restricted universe multiverse
           EOF
-          sudo rm -f /etc/apt/sources.list.d/*.list
+          sudo apt-get clean
           sudo apt-get update
+          echo "==== AFTER sources.list and sources.list.d ===="
+          cat /etc/apt/sources.list
+          ls -l /etc/apt/sources.list.d/
+          cat /etc/apt/sources.list.d/* || true
+          echo "==== END AFTER sources.list and sources.list.d ===="
           sudo apt-get install -y --no-install-recommends \
             crossbuild-essential-arm64 \
             gcc-aarch64-linux-gnu \
