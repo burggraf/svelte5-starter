@@ -8,6 +8,11 @@ on:
 jobs:
   build-macos-arm:
     runs-on: macos-latest
+    env:
+      SUPABASE_URL_ENCRYPTED: ${{ secrets.SUPABASE_URL_ENCRYPTED }}
+      SUPABASE_URL_ENCRYPTION_KEY: ${{ secrets.SUPABASE_URL_ENCRYPTION_KEY }}
+      SUPABASE_ANON_KEY_ENCRYPTED: ${{ secrets.SUPABASE_ANON_KEY_ENCRYPTED }}
+      SUPABASE_ANON_KEY_ENCRYPTION_KEY: ${{ secrets.SUPABASE_ANON_KEY_ENCRYPTION_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v2
@@ -22,6 +27,12 @@ jobs:
         run: pnpm install
       - name: Install Tauri CLI
         run: pnpm add -D @tauri-apps/cli
+      - name: Set environment variables from package.json
+        run: |
+          echo "VERSION=$(node -p \"require('./package.json').version\")" >> $GITHUB_ENV
+          echo "NAME=$(node -p \"require('./package.json').name\")" >> $GITHUB_ENV
+          echo "IDENTIFIER=$(node -p \"require('./package.json').identifier\")" >> $GITHUB_ENV
+          echo "DESCRIPTION=$(node -p \"require('./package.json').description\")" >> $GITHUB_ENV
       - name: Build SvelteKit
         run: pnpm build
       - name: Build Tauri (macOS ARM)
