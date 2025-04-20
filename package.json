@@ -1,6 +1,6 @@
 {
 	"name": "property-manager",
-	"version": "0.9.1",
+	"version": "0.9.2",
 	"identifier": "com.azabab.app",
 	"description": "Azabab: Property Rental Manager",
 	"type": "module",
