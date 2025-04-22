@@ -6,131 +6,131 @@ on:
     branches: [release]
 
 jobs:
- build-macos-arm:
-   runs-on: macos-latest
-   env:
-     SUPABASE_URL_ENCRYPTED: ${{ secrets.SUPABASE_URL_ENCRYPTED }}
-     SUPABASE_URL_ENCRYPTION_KEY: ${{ secrets.SUPABASE_URL_ENCRYPTION_KEY }}
-     SUPABASE_ANON_KEY_ENCRYPTED: ${{ secrets.SUPABASE_ANON_KEY_ENCRYPTED }}
-     SUPABASE_ANON_KEY_ENCRYPTION_KEY: ${{ secrets.SUPABASE_ANON_KEY_ENCRYPTION_KEY }}
-   steps:
-     - uses: actions/checkout@v4
-     - uses: pnpm/action-setup@v2
-       with:
-         version: 8
-     - uses: actions/setup-node@v4
-       with:
-         node-version: 20
-     - name: Install Rust (ARM)
-       run: rustup target add aarch64-apple-darwin
-     - name: Install dependencies
-       run: pnpm install
-     - name: Install Tauri CLI
-       run: pnpm add -D @tauri-apps/cli
-     - name: Set environment variables from package.json
-       run: |
-         echo "VERSION=$(node -p \"require('./package.json').version\")" >> $GITHUB_ENV
-         echo "NAME=$(node -p \"require('./package.json').name\")" >> $GITHUB_ENV
-         echo "IDENTIFIER=$(node -p \"require('./package.json').identifier\")" >> $GITHUB_ENV
-         echo "DESCRIPTION=$(node -p \"require('./package.json').description\")" >> $GITHUB_ENV
-     - name: Build SvelteKit
-       run: pnpm build
-     - name: Build Tauri (macOS ARM)
-       run: pnpm tauri build --target aarch64-apple-darwin
-     - uses: actions/upload-artifact@v4
-       with:
-         name: tauri-macos-arm
-         path: src-tauri/target/aarch64-apple-darwin/release/bundle
+  build-macos-arm:
+    runs-on: macos-latest
+    env:
+      SUPABASE_URL_ENCRYPTED: ${{ secrets.SUPABASE_URL_ENCRYPTED }}
+      SUPABASE_URL_ENCRYPTION_KEY: ${{ secrets.SUPABASE_URL_ENCRYPTION_KEY }}
+      SUPABASE_ANON_KEY_ENCRYPTED: ${{ secrets.SUPABASE_ANON_KEY_ENCRYPTED }}
+      SUPABASE_ANON_KEY_ENCRYPTION_KEY: ${{ secrets.SUPABASE_ANON_KEY_ENCRYPTION_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Rust (ARM)
+        run: rustup target add aarch64-apple-darwin
+      - name: Install dependencies
+        run: pnpm install
+      - name: Install Tauri CLI
+        run: pnpm add -D @tauri-apps/cli
+      - name: Set environment variables from package.json
+        run: |
+          echo "VERSION=$(node -p \"require('./package.json').version\")" >> $GITHUB_ENV
+          echo "NAME=$(node -p \"require('./package.json').name\")" >> $GITHUB_ENV
+          echo "IDENTIFIER=$(node -p \"require('./package.json').identifier\")" >> $GITHUB_ENV
+          echo "DESCRIPTION=$(node -p \"require('./package.json').description\")" >> $GITHUB_ENV
+      - name: Build SvelteKit
+        run: pnpm build
+      - name: Build Tauri (macOS ARM)
+        run: pnpm tauri build --target aarch64-apple-darwin
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tauri-macos-arm
+          path: src-tauri/target/aarch64-apple-darwin/release/bundle
 
- build-macos-intel:
-   runs-on: macos-latest
-   env:
-     SUPABASE_URL_ENCRYPTED: ${{ secrets.SUPABASE_URL_ENCRYPTED }}
-     SUPABASE_URL_ENCRYPTION_KEY: ${{ secrets.SUPABASE_URL_ENCRYPTION_KEY }}
-     SUPABASE_ANON_KEY_ENCRYPTED: ${{ secrets.SUPABASE_ANON_KEY_ENCRYPTED }}
-     SUPABASE_ANON_KEY_ENCRYPTION_KEY: ${{ secrets.SUPABASE_ANON_KEY_ENCRYPTION_KEY }}
-   steps:
-     - uses: actions/checkout@v4
-     - uses: pnpm/action-setup@v2
-       with:
-         version: 8
-     - uses: actions/setup-node@v4
-       with:
-         node-version: 20
-     - name: Install Rust (Intel)
-       run: rustup target add x86_64-apple-darwin
-     - name: Install dependencies
-       run: pnpm install
-     - name: Install Tauri CLI
-       run: pnpm add -D @tauri-apps/cli
-     - name: Build SvelteKit
-       run: pnpm build
-     - name: Build Tauri (macOS Intel)
-       run: pnpm tauri build --target x86_64-apple-darwin
-     - uses: actions/upload-artifact@v4
-       with:
-         name: tauri-macos-intel
-         path: src-tauri/target/x86_64-apple-darwin/release/bundle
+  build-macos-intel:
+    runs-on: macos-latest
+    env:
+      SUPABASE_URL_ENCRYPTED: ${{ secrets.SUPABASE_URL_ENCRYPTED }}
+      SUPABASE_URL_ENCRYPTION_KEY: ${{ secrets.SUPABASE_URL_ENCRYPTION_KEY }}
+      SUPABASE_ANON_KEY_ENCRYPTED: ${{ secrets.SUPABASE_ANON_KEY_ENCRYPTED }}
+      SUPABASE_ANON_KEY_ENCRYPTION_KEY: ${{ secrets.SUPABASE_ANON_KEY_ENCRYPTION_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Rust (Intel)
+        run: rustup target add x86_64-apple-darwin
+      - name: Install dependencies
+        run: pnpm install
+      - name: Install Tauri CLI
+        run: pnpm add -D @tauri-apps/cli
+      - name: Build SvelteKit
+        run: pnpm build
+      - name: Build Tauri (macOS Intel)
+        run: pnpm tauri build --target x86_64-apple-darwin
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tauri-macos-intel
+          path: src-tauri/target/x86_64-apple-darwin/release/bundle
 
- build-windows-intel:
-   runs-on: windows-latest
-   env:
-     SUPABASE_URL_ENCRYPTED: ${{ secrets.SUPABASE_URL_ENCRYPTED }}
-     SUPABASE_URL_ENCRYPTION_KEY: ${{ secrets.SUPABASE_URL_ENCRYPTION_KEY }}
-     SUPABASE_ANON_KEY_ENCRYPTED: ${{ secrets.SUPABASE_ANON_KEY_ENCRYPTED }}
-     SUPABASE_ANON_KEY_ENCRYPTION_KEY: ${{ secrets.SUPABASE_ANON_KEY_ENCRYPTION_KEY }}
-   steps:
-     - uses: actions/checkout@v4
-     - uses: pnpm/action-setup@v2
-       with:
-         version: 8
-     - uses: actions/setup-node@v4
-       with:
-         node-version: 20
-     - name: Install Rust (Intel)
-       run: rustup target add x86_64-pc-windows-msvc
-     - name: Install dependencies
-       run: pnpm install
-     - name: Install Tauri CLI
-       run: pnpm add -D @tauri-apps/cli
-     - name: Build SvelteKit
-       run: pnpm build
-     - name: Build Tauri (Windows Intel)
-       run: pnpm tauri build --target x86_64-pc-windows-msvc
-     - uses: actions/upload-artifact@v4
-       with:
-         name: tauri-windows-intel
-         path: src-tauri/target/x86_64-pc-windows-msvc/release/bundle
+  build-windows-intel:
+    runs-on: windows-latest
+    env:
+      SUPABASE_URL_ENCRYPTED: ${{ secrets.SUPABASE_URL_ENCRYPTED }}
+      SUPABASE_URL_ENCRYPTION_KEY: ${{ secrets.SUPABASE_URL_ENCRYPTION_KEY }}
+      SUPABASE_ANON_KEY_ENCRYPTED: ${{ secrets.SUPABASE_ANON_KEY_ENCRYPTED }}
+      SUPABASE_ANON_KEY_ENCRYPTION_KEY: ${{ secrets.SUPABASE_ANON_KEY_ENCRYPTION_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Rust (Intel)
+        run: rustup target add x86_64-pc-windows-msvc
+      - name: Install dependencies
+        run: pnpm install
+      - name: Install Tauri CLI
+        run: pnpm add -D @tauri-apps/cli
+      - name: Build SvelteKit
+        run: pnpm build
+      - name: Build Tauri (Windows Intel)
+        run: pnpm tauri build --target x86_64-pc-windows-msvc
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tauri-windows-intel
+          path: src-tauri/target/x86_64-pc-windows-msvc/release/bundle
 
- build-windows-arm:
-   runs-on: windows-latest
-   env:
-     SUPABASE_URL_ENCRYPTED: ${{ secrets.SUPABASE_URL_ENCRYPTED }}
-     SUPABASE_URL_ENCRYPTION_KEY: ${{ secrets.SUPABASE_URL_ENCRYPTION_KEY }}
-     SUPABASE_ANON_KEY_ENCRYPTED: ${{ secrets.SUPABASE_ANON_KEY_ENCRYPTED }}
-     SUPABASE_ANON_KEY_ENCRYPTION_KEY: ${{ secrets.SUPABASE_ANON_KEY_ENCRYPTION_KEY }}
-   steps:
-     - uses: actions/checkout@v4
-     - uses: pnpm/action-setup@v2
-       with:
-         version: 8
-     - uses: actions/setup-node@v4
-       with:
-         node-version: 20
-     - name: Install Rust (ARM)
-       run: rustup target add aarch64-pc-windows-msvc
-     - name: Install dependencies
-       run: pnpm install
-     - name: Install Tauri CLI
-       run: pnpm add -D @tauri-apps/cli
-     - name: Build SvelteKit
-       run: pnpm build
-     - name: Build Tauri (Windows ARM)
-       run: pnpm tauri build --target aarch64-pc-windows-msvc
-     - uses: actions/upload-artifact@v4
-       with:
-         name: tauri-windows-arm
-         path: src-tauri/target/aarch64-pc-windows-msvc/release/bundle
+  build-windows-arm:
+    runs-on: windows-latest
+    env:
+      SUPABASE_URL_ENCRYPTED: ${{ secrets.SUPABASE_URL_ENCRYPTED }}
+      SUPABASE_URL_ENCRYPTION_KEY: ${{ secrets.SUPABASE_URL_ENCRYPTION_KEY }}
+      SUPABASE_ANON_KEY_ENCRYPTED: ${{ secrets.SUPABASE_ANON_KEY_ENCRYPTED }}
+      SUPABASE_ANON_KEY_ENCRYPTION_KEY: ${{ secrets.SUPABASE_ANON_KEY_ENCRYPTION_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Rust (ARM)
+        run: rustup target add aarch64-pc-windows-msvc
+      - name: Install dependencies
+        run: pnpm install
+      - name: Install Tauri CLI
+        run: pnpm add -D @tauri-apps/cli
+      - name: Build SvelteKit
+        run: pnpm build
+      - name: Build Tauri (Windows ARM)
+        run: pnpm tauri build --target aarch64-pc-windows-msvc
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tauri-windows-arm
+          path: src-tauri/target/aarch64-pc-windows-msvc/release/bundle
 
   build-ubuntu-intel:
     runs-on: ubuntu-latest
@@ -212,7 +212,7 @@ jobs:
           deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ jammy-backports main restricted universe multiverse
           deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ jammy-security main restricted universe multiverse
           EOF
-         Redirect azure.archive.ubuntu.com to ports.ubuntu.com to fix ARM64 package fetch
+           # Redirect azure.archive.ubuntu.com to ports.ubuntu.com to fix ARM64 packages
           echo "185.125.190.39 azure.archive.ubuntu.com" | sudo tee -a /etc/hosts
           sudo apt-get clean
           sudo apt-get update
@@ -234,7 +234,7 @@ jobs:
       - name: Set up cross-compilation environment
         run: |
           sudo tee /usr/local/bin/aarch64-linux-gnu-pkg-config << 'EOF' > /dev/null
-        !/bin/sh
+          #!/bin/sh
           export PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig
           export PKG_CONFIG_LIBDIR=/usr/lib/aarch64-linux-gnu/pkgconfig
           export PKG_CONFIG_SYSROOT_DIR=/
