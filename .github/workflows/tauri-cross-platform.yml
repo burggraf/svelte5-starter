@@ -267,6 +267,10 @@ jobs:
 
   release:
     needs:
+      - build-macos-arm
+      - build-macos-intel
+      - build-windows-intel
+      - build-windows-arm
       - build-ubuntu-intel
       - build-ubuntu-arm
     runs-on: ubuntu-latest
