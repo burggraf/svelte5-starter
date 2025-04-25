@@ -10,23 +10,23 @@ on:
       ENABLE_MACOS_INTEL:
         description: "Build macOS Intel"
         required: false
-        default: "false"
+        default: "true"
       ENABLE_WINDOWS_INTEL:
         description: "Build Windows Intel"
         required: false
-        default: "false"
+        default: "true"
       ENABLE_WINDOWS_ARM:
         description: "Build Windows ARM"
         required: false
-        default: "false"
+        default: "true"
       ENABLE_UBUNTU_INTEL:
         description: "Build Ubuntu Intel"
         required: false
-        default: "false"
+        default: "true"
       ENABLE_UBUNTU_ARM:
         description: "Build Ubuntu ARM"
         required: false
-        default: "false"
+        default: "true"
   push:
     branches: [release]
   # To enable/disable builds for specific platforms, set these to true/false in the workflow_dispatch or push event:
@@ -35,8 +35,14 @@ on:
   # Platform build toggles (set in job 'if' conditions below)
 
 jobs:
+  # === TOGGLE BUILDS ON/OFF HERE ===
+  # Set to true/false to enable/disable each build for ALL triggers (push and workflow_dispatch)
+  # Example: To disable macos-intel, set ENABLE_MACOS_INTEL to 'false'
+  # Edit these values below:
+  # To disable a build, comment out the job or use the if: false condition directly on the job.
+
   build-macos-arm:
-    if: ${{ github.event.inputs.ENABLE_MACOS_ARM == 'true' || github.event_name == 'push' }}
+    if: true # set to false to disable this build
     runs-on: macos-latest
     env:
       SUPABASE_URL_ENCRYPTED: ${{ secrets.SUPABASE_URL_ENCRYPTED }}
@@ -91,7 +97,7 @@ jobs:
           path: src-tauri/target/aarch64-apple-darwin/release/bundle
 
   build-macos-intel:
-    if: ${{ github.event.inputs.ENABLE_MACOS_INTEL == 'true' || github.event_name == 'push' }}
+    if: false # set to false to disable this build
     runs-on: macos-latest
     env:
       SUPABASE_URL_ENCRYPTED: ${{ secrets.SUPABASE_URL_ENCRYPTED }}
@@ -122,7 +128,7 @@ jobs:
           path: src-tauri/target/x86_64-apple-darwin/release/bundle
 
   build-windows-intel:
-    if: ${{ github.event.inputs.ENABLE_WINDOWS_INTEL == 'true' || github.event_name == 'push' }}
+    if: false # set to false to disable this build
     runs-on: windows-latest
     env:
       SUPABASE_URL_ENCRYPTED: ${{ secrets.SUPABASE_URL_ENCRYPTED }}
@@ -153,7 +159,7 @@ jobs:
           path: src-tauri/target/x86_64-pc-windows-msvc/release/bundle
 
   build-windows-arm:
-    if: ${{ github.event.inputs.ENABLE_WINDOWS_ARM == 'true' || github.event_name == 'push' }}
+    if: false # set to false to disable this build
     runs-on: windows-latest
     env:
       SUPABASE_URL_ENCRYPTED: ${{ secrets.SUPABASE_URL_ENCRYPTED }}
@@ -184,7 +190,7 @@ jobs:
           path: src-tauri/target/aarch64-pc-windows-msvc/release/bundle
 
   build-ubuntu-intel:
-    if: ${{ github.event.inputs.ENABLE_UBUNTU_INTEL == 'true' || github.event_name == 'push' }}
+    if: false # set to false to disable this build
     runs-on: ubuntu-latest
     env:
       SUPABASE_URL_ENCRYPTED: ${{ secrets.SUPABASE_URL_ENCRYPTED }}
@@ -227,7 +233,7 @@ jobs:
           path: src-tauri/target/x86_64-unknown-linux-gnu/release/bundle
 
   build-ubuntu-arm:
-    if: ${{ github.event.inputs.ENABLE_UBUNTU_ARM == 'true' || github.event_name == 'push' }}
+    if: false # set to false to disable this build
     runs-on: ubuntu-22.04
     env:
       SUPABASE_URL_ENCRYPTED: ${{ secrets.SUPABASE_URL_ENCRYPTED }}
