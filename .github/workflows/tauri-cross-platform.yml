@@ -29,10 +29,28 @@ jobs:
         run: pnpm add -D @tauri-apps/cli
       - name: Set environment variables from package.json
         run: |
+          echo "package.json contents:"
+          cat package.json
+          echo "**************"
+          echo "setting env variables"
           echo "VERSION=$(node -p \"require('./package.json').version\")" >> $GITHUB_ENV
           echo "NAME=$(node -p \"require('./package.json').name\")" >> $GITHUB_ENV
           echo "IDENTIFIER=$(node -p \"require('./package.json').identifier\")" >> $GITHUB_ENV
           echo "DESCRIPTION=$(node -p \"require('./package.json').description\")" >> $GITHUB_ENV
+          export VERSION=$(node -p "require('./package.json').version")
+          export NAME=$(node -p "require('./package.json').name")
+          export IDENTIFIER=$(node -p "require('./package.json').identifier")
+          export DESCRIPTION=$(node -p "require('./package.json').description")
+          echo "Shell VERSION: $VERSION"
+          echo "Shell NAME: $NAME"
+          echo "Shell IDENTIFIER: $IDENTIFIER"
+          echo "Shell DESCRIPTION: $DESCRIPTION"
+      - name: Check environment variables
+        run: |
+          echo "ENV VERSION: ${{ env.VERSION }}"
+          echo "ENV NAME: ${{ env.NAME }}"
+          echo "ENV IDENTIFIER: ${{ env.IDENTIFIER }}"
+          echo "Computed VERSION: $(node -p \"require('./package.json').version\")"
       - name: Build SvelteKit
         run: pnpm build
       - name: Build Tauri (macOS ARM)
@@ -298,9 +316,6 @@ jobs:
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DESCRIPTION: "${{ env.DESCRIPTION || '' }}"
-          NAME: "${{ env.NAME || '' }}"
-          VERSION: "${{ env.VERSION || '' }}"
         with:
           tag_name: "${{ env.NAME }}-${{ env.VERSION }}-release-${{ github.run_number }}"
           release_name: "${{ env.DESCRIPTION }}"
