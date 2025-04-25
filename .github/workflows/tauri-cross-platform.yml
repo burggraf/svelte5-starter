@@ -1,32 +1,6 @@
 name: Tauri Cross-Platform Builds
 
 on:
-  workflow_dispatch:
-    inputs:
-      ENABLE_MACOS_ARM:
-        description: "Build macOS ARM"
-        required: false
-        default: "true"
-      ENABLE_MACOS_INTEL:
-        description: "Build macOS Intel"
-        required: false
-        default: "true"
-      ENABLE_WINDOWS_INTEL:
-        description: "Build Windows Intel"
-        required: false
-        default: "true"
-      ENABLE_WINDOWS_ARM:
-        description: "Build Windows ARM"
-        required: false
-        default: "true"
-      ENABLE_UBUNTU_INTEL:
-        description: "Build Ubuntu Intel"
-        required: false
-        default: "true"
-      ENABLE_UBUNTU_ARM:
-        description: "Build Ubuntu ARM"
-        required: false
-        default: "true"
   push:
     branches: [release]
   # To enable/disable builds for specific platforms, set these to true/false in the workflow_dispatch or push event:
@@ -35,12 +9,6 @@ on:
   # Platform build toggles (set in job 'if' conditions below)
 
 jobs:
-  # === TOGGLE BUILDS ON/OFF HERE ===
-  # Set to true/false to enable/disable each build for ALL triggers (push and workflow_dispatch)
-  # Example: To disable macos-intel, set ENABLE_MACOS_INTEL to 'false'
-  # Edit these values below:
-  # To disable a build, comment out the job or use the if: false condition directly on the job.
-
   build-macos-arm:
     if: true # set to false to disable this build
     runs-on: macos-latest
@@ -337,12 +305,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set environment variables from package.json
-        id: set_pkg_vars
         run: |
-          echo "VERSION=$(node -p 'require(\"./package.json\").version')" >> $GITHUB_ENV
-          echo "NAME=$(node -p 'require(\"./package.json\").name')" >> $GITHUB_ENV
-          echo "IDENTIFIER=$(node -p 'require(\"./package.json\").identifier')" >> $GITHUB_ENV
-          echo "DESCRIPTION=$(node -p 'require(\"./package.json\").description')" >> $GITHUB_ENV
+          echo "package.json contents:"
+          cat package.json
+          echo "**************"
+          echo "setting env variables"
+          echo "VERSION=$(node -p \"require('./package.json').version\")" >> $GITHUB_ENV
+          echo "NAME=$(node -p \"require('./package.json').name\")" >> $GITHUB_ENV
+          echo "IDENTIFIER=$(node -p \"require('./package.json').identifier\")" >> $GITHUB_ENV
+          echo "DESCRIPTION=$(node -p \"require('./package.json').description\")" >> $GITHUB_ENV
+          export VERSION=$(node -p "require('./package.json').version")
+          export NAME=$(node -p "require('./package.json').name")
+          export IDENTIFIER=$(node -p "require('./package.json').identifier")
+          export DESCRIPTION=$(node -p "require('./package.json').description")
+          echo "Shell VERSION: $VERSION"
+          echo "Shell NAME: $NAME"
+          echo "Shell IDENTIFIER: $IDENTIFIER"
+          echo "Shell DESCRIPTION: $DESCRIPTION"
           export VERSION=$(node -p "require('./package.json').version")
           export NAME=$(node -p "require('./package.json').name")
           export IDENTIFIER=$(node -p "require('./package.json').identifier")
@@ -363,27 +342,18 @@ jobs:
             fi
           done
 
-      - name: Debug env vars before release
+      - name: Check environment variables
         run: |
-          echo "VERSION=$VERSION"
-          echo "NAME=$NAME"
-          echo "IDENTIFIER=$IDENTIFIER"
-          echo "DESCRIPTION=$DESCRIPTION"
-        env:
-          VERSION: ${{ env.VERSION }}
-          NAME: ${{ env.NAME }}
-          IDENTIFIER: ${{ env.IDENTIFIER }}
-          DESCRIPTION: ${{ env.DESCRIPTION }}
+          echo "ENV VERSION: ${{ env.VERSION }}"
+          echo "ENV NAME: ${{ env.NAME }}"
+          echo "ENV IDENTIFIER: ${{ env.IDENTIFIER }}"
+          echo "Computed VERSION: $(node -p \"require('./package.json').version\")"
 
       - name: Create GitHub Release
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VERSION: ${{ env.VERSION }}
-          NAME: ${{ env.NAME }}
-          IDENTIFIER: ${{ env.IDENTIFIER }}
-          DESCRIPTION: ${{ env.DESCRIPTION }}
         with:
           tag_name: "${{ env.NAME }}-${{ env.VERSION }}-release-${{ github.run_number }}"
           release_name: "${{ env.DESCRIPTION }}"
