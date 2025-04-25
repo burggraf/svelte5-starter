@@ -299,8 +299,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DESCRIPTION: "${{ env.DESCRIPTION || '' }}"
+          NAME: "${{ env.NAME || '' }}"
+          VERSION: "${{ env.VERSION || '' }}"
         with:
-          tag_name: "${{ env.DESCRIPTION }} Release ${{ github.run_number }}"
+          tag_name: "${{ env.NAME }}-${{ env.VERSION }}-release-${{ github.run_number }}"
           release_name: "${{ env.DESCRIPTION }}"
           draft: false
           prerelease: false
