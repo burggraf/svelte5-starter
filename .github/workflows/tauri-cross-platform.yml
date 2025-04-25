@@ -368,6 +368,10 @@ jobs:
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ env.VERSION }}
+          NAME: ${{ env.NAME }}
+          IDENTIFIER: ${{ env.IDENTIFIER }}
+          DESCRIPTION: ${{ env.DESCRIPTION }}
         with:
           tag_name: "${{ env.NAME }}-${{ env.VERSION }}-release-${{ github.run_number }}"
           release_name: "${{ env.DESCRIPTION }}"
