@@ -2,11 +2,41 @@ name: Tauri Cross-Platform Builds
 
 on:
   workflow_dispatch:
+    inputs:
+      ENABLE_MACOS_ARM:
+        description: "Build macOS ARM"
+        required: false
+        default: "true"
+      ENABLE_MACOS_INTEL:
+        description: "Build macOS Intel"
+        required: false
+        default: "false"
+      ENABLE_WINDOWS_INTEL:
+        description: "Build Windows Intel"
+        required: false
+        default: "false"
+      ENABLE_WINDOWS_ARM:
+        description: "Build Windows ARM"
+        required: false
+        default: "false"
+      ENABLE_UBUNTU_INTEL:
+        description: "Build Ubuntu Intel"
+        required: false
+        default: "false"
+      ENABLE_UBUNTU_ARM:
+        description: "Build Ubuntu ARM"
+        required: false
+        default: "false"
   push:
     branches: [release]
+  # To enable/disable builds for specific platforms, set these to true/false in the workflow_dispatch or push event:
+  # Example: Only build macos-arm by setting ENABLE_MACOS_ARM: true and others to false
+
+  # Platform build toggles (set in job 'if' conditions below)
 
 jobs:
   build-macos-arm:
+    if: ${{ github.event.inputs.ENABLE_MACOS_ARM == 'true' || github.event_name == 'push' }}
     runs-on: macos-latest
     env:
       SUPABASE_URL_ENCRYPTED: ${{ secrets.SUPABASE_URL_ENCRYPTED }}
@@ -61,6 +91,7 @@ jobs:
           path: src-tauri/target/aarch64-apple-darwin/release/bundle
 
   build-macos-intel:
+    if: ${{ github.event.inputs.ENABLE_MACOS_INTEL == 'true' || github.event_name == 'push' }}
     runs-on: macos-latest
     env:
       SUPABASE_URL_ENCRYPTED: ${{ secrets.SUPABASE_URL_ENCRYPTED }}
@@ -91,6 +122,7 @@ jobs:
           path: src-tauri/target/x86_64-apple-darwin/release/bundle
 
   build-windows-intel:
+    if: ${{ github.event.inputs.ENABLE_WINDOWS_INTEL == 'true' || github.event_name == 'push' }}
     runs-on: windows-latest
     env:
       SUPABASE_URL_ENCRYPTED: ${{ secrets.SUPABASE_URL_ENCRYPTED }}
@@ -121,6 +153,7 @@ jobs:
           path: src-tauri/target/x86_64-pc-windows-msvc/release/bundle
 
   build-windows-arm:
+    if: ${{ github.event.inputs.ENABLE_WINDOWS_ARM == 'true' || github.event_name == 'push' }}
     runs-on: windows-latest
     env:
       SUPABASE_URL_ENCRYPTED: ${{ secrets.SUPABASE_URL_ENCRYPTED }}
@@ -151,6 +184,7 @@ jobs:
           path: src-tauri/target/aarch64-pc-windows-msvc/release/bundle
 
   build-ubuntu-intel:
+    if: ${{ github.event.inputs.ENABLE_UBUNTU_INTEL == 'true' || github.event_name == 'push' }}
     runs-on: ubuntu-latest
     env:
       SUPABASE_URL_ENCRYPTED: ${{ secrets.SUPABASE_URL_ENCRYPTED }}
@@ -193,6 +227,7 @@ jobs:
           path: src-tauri/target/x86_64-unknown-linux-gnu/release/bundle
 
   build-ubuntu-arm:
+    if: ${{ github.event.inputs.ENABLE_UBUNTU_ARM == 'true' || github.event_name == 'push' }}
     runs-on: ubuntu-22.04
     env:
       SUPABASE_URL_ENCRYPTED: ${{ secrets.SUPABASE_URL_ENCRYPTED }}
@@ -305,14 +340,7 @@ jobs:
           echo "NAME=$(node -p 'require(\"./package.json\").name')" >> $GITHUB_ENV
           echo "IDENTIFIER=$(node -p 'require(\"./package.json\").identifier')" >> $GITHUB_ENV
           echo "DESCRIPTION=$(node -p 'require(\"./package.json\").description')" >> $GITHUB_ENV
-          VERSION=$(node -p 'require("./package.json").version')
-          NAME=$(node -p 'require("./package.json").name')
-          IDENTIFIER=$(node -p 'require("./package.json").identifier')
-          DESCRIPTION=$(node -p 'require("./package.json").description')
-          echo "Shell VERSION: $VERSION"
-          echo "Shell NAME: $NAME"
-          echo "Shell IDENTIFIER: $IDENTIFIER"
-          echo "Shell DESCRIPTION: $DESCRIPTION"
+          # Wait for $GITHUB_ENV to be available in subsequent steps
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4
