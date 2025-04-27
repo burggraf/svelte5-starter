@@ -27,6 +27,14 @@ jobs:
           node-version: 20
       - name: Install Rust (ARM)
         run: rustup target add aarch64-apple-darwin
+      - name: Install Xcode Command Line Tools # Add this step
+        run: |
+          echo "Attempting to install Xcode Command Line Tools..."
+          sudo xcode-select --install || echo "Xcode Command Line Tools already installed or failed to install."
+          echo "Listing SDKs..."
+          xcodebuild -showsdks || echo "Failed to list SDKs."
+          echo "Checking hdiutil path..."
+          which hdiutil || echo "hdiutil not found."
       - name: Install dependencies
         run: pnpm install
       - name: Install Tauri CLI
