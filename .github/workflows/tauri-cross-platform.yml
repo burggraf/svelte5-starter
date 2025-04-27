@@ -73,7 +73,7 @@ jobs:
           path: src-tauri/target/aarch64-apple-darwin/release/bundle
 
   build-macos-intel:
-    if: false # set to false to disable this build
+    if: true # set to false to disable this build
     runs-on: macos-latest
     env:
       SUPABASE_URL_ENCRYPTED: ${{ secrets.SUPABASE_URL_ENCRYPTED }}
@@ -104,7 +104,7 @@ jobs:
           path: src-tauri/target/x86_64-apple-darwin/release/bundle
 
   build-windows-intel:
-    if: false # set to false to disable this build
+    if: true # set to false to disable this build
     runs-on: windows-latest
     env:
       SUPABASE_URL_ENCRYPTED: ${{ secrets.SUPABASE_URL_ENCRYPTED }}
@@ -135,7 +135,7 @@ jobs:
           path: src-tauri/target/x86_64-pc-windows-msvc/release/bundle
 
   build-windows-arm:
-    if: false # set to false to disable this build
+    if: true # set to false to disable this build
     runs-on: windows-latest
     env:
       SUPABASE_URL_ENCRYPTED: ${{ secrets.SUPABASE_URL_ENCRYPTED }}
@@ -166,7 +166,7 @@ jobs:
           path: src-tauri/target/aarch64-pc-windows-msvc/release/bundle
 
   build-ubuntu-intel:
-    if: false # set to false to disable this build
+    if: true # set to false to disable this build
     runs-on: ubuntu-latest
     env:
       SUPABASE_URL_ENCRYPTED: ${{ secrets.SUPABASE_URL_ENCRYPTED }}
@@ -209,7 +209,7 @@ jobs:
           path: src-tauri/target/x86_64-unknown-linux-gnu/release/bundle
 
   build-ubuntu-arm:
-    if: false # set to false to disable this build
+    if: true # set to false to disable this build
     runs-on: ubuntu-22.04
     env:
       SUPABASE_URL_ENCRYPTED: ${{ secrets.SUPABASE_URL_ENCRYPTED }}
