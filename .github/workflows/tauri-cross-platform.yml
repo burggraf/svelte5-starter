@@ -349,7 +349,8 @@ jobs:
           echo "ENV VERSION: ${{ env.VERSION }}"
           echo "ENV NAME: ${{ env.NAME }}"
           echo "ENV IDENTIFIER: ${{ env.IDENTIFIER }}"
-          echo "Computed VERSION: $(node -p \"require('./package.json').version\")"
+          # Removed the line below as it causes syntax errors on the Ubuntu runner
+          # echo "Computed VERSION: $(node -p \"require('./package.json').version\")"
 
       - name: Create GitHub Release
         id: create_release
