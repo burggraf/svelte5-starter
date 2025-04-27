@@ -342,15 +342,30 @@ jobs:
         with:
           path: artifacts
 
-      - name: Zip artifacts if present
+      - name: Zip artifacts if present and rename
         run: |
-          for dir in tauri-macos-arm tauri-macos-intel tauri-windows-intel tauri-windows-arm tauri-ubuntu-intel tauri-ubuntu-arm; do
+          # Define mappings from original dir name to platform suffix
+          declare -A platform_map
+          platform_map["tauri-macos-arm"]="macos-arm"
+          platform_map["tauri-macos-intel"]="macos-intel"
+          platform_map["tauri-windows-arm"]="windows-arm"
+          platform_map["tauri-windows-intel"]="windows-intel"
+          platform_map["tauri-ubuntu-arm"]="ubuntu-arm"
+          platform_map["tauri-ubuntu-intel"]="ubuntu-intel"
+
+          for dir in "${!platform_map[@]}"; do
             if [ -d "artifacts/$dir" ]; then
+              platform_suffix="${platform_map[$dir]}"
+              zip_name="${{ env.NAME }}-${{ env.VERSION }}-${platform_suffix}.zip"
+              echo "Zipping artifacts/$dir to $zip_name"
               cd "artifacts/$dir"
-              zip -r "../../$dir.zip" .
+              zip -r "../../$zip_name" .
               cd - > /dev/null
+            else
+              echo "Directory artifacts/$dir not found, skipping zip."
             fi
           done
+
 
       - name: Check environment variables
         run: |

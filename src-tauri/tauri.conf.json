@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Svelte5Starter",
-  "version": "0.1.0",
-  "identifier": "com.azabab.propertymanager",
+  "productName": "svelte5-starter",
+  "version": "0.9.5",
+  "identifier": "com.svelte5starter.app",
   "build": {
     "frontendDist": "../build",
     "devUrl": "http://localhost:5174",
