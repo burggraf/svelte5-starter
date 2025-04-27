@@ -1,8 +1,8 @@
 {
-	"name": "property-manager",
-	"version": "0.9.4",
-	"identifier": "com.azabab.app",
-	"description": "Azabab: Property Rental Manager",
+	"name": "svelte5-starter",
+	"version": "0.9.5",
+	"identifier": "com.svelte5starter.app",
+	"description": "Svelte 5 Starter with Supabase",
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev --host 0.0.0.0",
