@@ -365,9 +365,14 @@ jobs:
 
       - name: Upload artifacts to Release
         run: |
+          TAG_NAME="${{ env.NAME }}-${{ env.VERSION }}-release-${{ github.run_number }}" # Define the correct tag name
+          echo "Uploading artifacts to tag: $TAG_NAME"
           for zip in tauri-macos-arm.zip tauri-macos-intel.zip tauri-windows-intel.zip tauri-windows-arm.zip tauri-ubuntu-intel.zip tauri-ubuntu-arm.zip; do
             if [ -f "$zip" ]; then
-              gh release upload "${{ github.ref_name }}-tauri-release-${{ github.run_number }}" "$zip" --clobber
+              echo "Uploading $zip..."
+              gh release upload "$TAG_NAME" "$zip" --clobber # Use the correct tag name variable
+            else
+              echo "Skipping $zip, file not found."
             fi
           done
         env:
