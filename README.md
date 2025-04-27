@@ -95,6 +95,7 @@ An opinionated development template designed to create large-scale business apps
     - Cursor Settings / Features / Docs / Add New Doc
     - Add each documentation link found in `.cursor-documentation`
 
+# Svelte 5 Template
 ## Developer Aids
 
 - Global constants such as `__APP_VERSION__` declared in [package.json](/package.json) See: [app.d.ts](./src/app.d.ts)
@@ -110,6 +111,14 @@ An opinionated development template designed to create large-scale business apps
 - Icon build system
   - [make-icons.sh](./make-icons.sh) creates all icons from a base icon svg file [icon.svg](./static/icon.svg)
   - [update-app-icons.sh](./update-app-icons.sh) copies icons needed for `ios` and `android` app versions
+- **Version Synchronization**
+  - The `version` number in `package.json` is the single source of truth.
+  - Use the `npm version` command to update the version across the project:
+    - `npm version patch`: Increments the patch version (e.g., 0.9.5 -> 0.9.6)
+    - `npm version minor`: Increments the minor version (e.g., 0.9.5 -> 0.10.0)
+    - `npm version major`: Increments the major version (e.g., 0.9.5 -> 1.0.0)
+    - `npm version <specific_version>`: Sets a specific version (e.g., `npm version 1.2.3`)
+  - Running `npm version` automatically updates the version in `package.json`, `src-tauri/tauri.conf.json`, and `src-tauri/Cargo.toml` using the `scripts/sync-version.js` script, commits the changes, and creates a git tag.
 
 ## Development Targets
 

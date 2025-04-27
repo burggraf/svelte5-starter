@@ -15,7 +15,8 @@
 		"android": "npm run build && npx cap sync && npx cap update android && npx cap copy android && npx cap run android",
 		"android-reload": "cap run android -l --external --port=5173",
 		"tauri:dev": "tauri dev",
-		"tauri:build": "tauri build"
+		"tauri:build": "tauri build",
+        "version": "node scripts/sync-version.js && git add src-tauri/tauri.conf.json src-tauri/Cargo.toml" // <-- Add this line
 	},
 	"devDependencies": {
 		"@capacitor/cli": "^6.1.2",
