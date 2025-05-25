@@ -8,6 +8,10 @@ on:
 
   # Platform build toggles (set in job 'if' conditions below)
 
+permissions:
+  contents: write
+  packages: write
+
 jobs:
   build-macos-arm:
     if: true # set to false to disable this build
@@ -366,7 +370,6 @@ jobs:
             fi
           done
 
-
       - name: Check environment variables
         run: |
           echo "ENV VERSION: ${{ env.VERSION }}"
@@ -376,26 +379,51 @@ jobs:
           # echo "Computed VERSION: $(node -p \"require('./package.json').version\")"
 
       - name: Create GitHub Release
-        id: create_release
-        uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: "${{ env.NAME }}-${{ env.VERSION }}-release-${{ github.run_number }}"
-          release_name: "${{ env.DESCRIPTION }}"
-          draft: false
-          prerelease: false
+        run: |
+          TAG_NAME="${{ env.NAME }}-${{ env.VERSION }}-release-${{ github.run_number }}"
+          echo "Creating release with tag: $TAG_NAME"
+
+          # Check if tag already exists and delete it if it does
+          if gh release view "$TAG_NAME" >/dev/null 2>&1; then
+            echo "Release $TAG_NAME already exists, deleting it..."
+            gh release delete "$TAG_NAME" --yes || true
+          fi
+
+          # Create the release
+          gh release create "$TAG_NAME" \
+            --title "${{ env.DESCRIPTION }}" \
+            --notes "Release ${{ env.VERSION }} of ${{ env.NAME }}" \
+            --draft=false \
+            --prerelease=false
+
+      - name: List created zip files
+        run: |
+          echo "Files in current directory:"
+          ls -la *.zip 2>/dev/null || echo "No zip files found"
 
       - name: Upload artifacts to Release
         run: |
-          TAG_NAME="${{ env.NAME }}-${{ env.VERSION }}-release-${{ github.run_number }}" # Define the correct tag name
+          TAG_NAME="${{ env.NAME }}-${{ env.VERSION }}-release-${{ github.run_number }}"
           echo "Uploading artifacts to tag: $TAG_NAME"
-          for zip in tauri-macos-arm.zip tauri-macos-intel.zip tauri-windows-intel.zip tauri-windows-arm.zip tauri-ubuntu-intel.zip tauri-ubuntu-arm.zip; do
-            if [ -f "$zip" ]; then
-              echo "Uploading $zip..."
-              gh release upload "$TAG_NAME" "$zip" --clobber # Use the correct tag name variable
+
+          # Use the correct naming convention that matches the zip creation step
+          declare -A zip_map
+          zip_map["macos-arm"]="${{ env.NAME }}-${{ env.VERSION }}-macos-arm.zip"
+          zip_map["macos-intel"]="${{ env.NAME }}-${{ env.VERSION }}-macos-intel.zip"
+          zip_map["windows-arm"]="${{ env.NAME }}-${{ env.VERSION }}-windows-arm.zip"
+          zip_map["windows-intel"]="${{ env.NAME }}-${{ env.VERSION }}-windows-intel.zip"
+          zip_map["ubuntu-arm"]="${{ env.NAME }}-${{ env.VERSION }}-ubuntu-arm.zip"
+          zip_map["ubuntu-intel"]="${{ env.NAME }}-${{ env.VERSION }}-ubuntu-intel.zip"
+
+          for platform in "${!zip_map[@]}"; do
+            zip_file="${zip_map[$platform]}"
+            if [ -f "$zip_file" ]; then
+              echo "Uploading $zip_file..."
+              gh release upload "$TAG_NAME" "$zip_file" --clobber
             else
-              echo "Skipping $zip, file not found."
+              echo "Skipping $zip_file, file not found."
             fi
           done
         env:
